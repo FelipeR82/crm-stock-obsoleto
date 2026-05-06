@@ -750,10 +750,10 @@ async function procesarEmail(){
   status.textContent='Analizando...';
   result.innerHTML='<p style="color:var(--muted);font-size:13px">Procesando con IA...</p>';
   const clientesList=clientes.slice(0,50).map(c=>`${gc(c,'Codigo Cliente')} - ${gc(c,'Nombre Cliente')} (${gc(c,'Agente Comercial')})`).join('\n');
-  const GEMINI_KEY='AIzaSyA5c9BfxJi5OVJSI5JHMQtx_ZGd0LlB0iU';
+  const GEMINI_KEY='AIzaSyB8QPQ_wGSqg-eXRoh9YK0fNppA6p-NykU'; // ← Reemplaza esto con tu clave de Google AI Studio
   try{
     const prompt=`Analiza este email comercial. Extrae en JSON con estas claves: cliente_nombre, cliente_cod (código del cliente si aparece o si coincide con la lista), contacto, agente_comercial, fecha (dd/mm/yyyy o null), codigos_producto (array, vacío si no hay códigos concretos), oferta_tipo ("codigos"|"coleccion"|"catalogo"), coleccion_mencionada (nombre si aplica), valor_estimado (número, 0 si no), notas (resumen 1-2 frases). Lista de clientes conocidos:\n${clientesList}\n\nResponde SOLO JSON sin markdown ni backticks.\n\nEMAIL:\n${texto}`;
-    const resp=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_KEY}`,{
+    const resp=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${GEMINI_KEY}`,{
       method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({contents:[{parts:[{text:prompt}]}],generationConfig:{temperature:0.1}})
     });
