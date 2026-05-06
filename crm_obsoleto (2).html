@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>CRM Stock Obsoleto</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,sans-serif;background:#f5f5f3;color:#1a1a1a;min-height:100vh}
+:root{--nav-h:56px;--sidebar-w:220px;--accent:#185FA5;--accent-light:#E6F1FB;--success:#3B6D11;--success-light:#EAF3DE;--warn:#854F0B;--warn-light:#FAEEDA;--danger:#A32D2D;--danger-light:#FCEBEB;--border:#e0ddd6;--muted:#888780}
+nav{position:fixed;top:0;left:0;right:0;height:var(--nav-h);background:#fff;border-bottom:0.5px solid var(--border);display:flex;align-items:center;padding:0 1.5rem;gap:1rem;z-index:100}
+.nav-logo{font-weight:500;font-size:15px;color:var(--accent)}
+.nav-logo span{color:#1a1a1a}
+nav .spacer{flex:1}
+.nav-badge{background:var(--accent-light);color:var(--accent);font-size:12px;padding:3px 10px;border-radius:20px}
+aside{position:fixed;top:var(--nav-h);left:0;bottom:0;width:var(--sidebar-w);background:#fff;border-right:0.5px solid var(--border);padding:1.5rem 0;z-index:90;overflow-y:auto}
+.aside-item{display:flex;align-items:center;gap:10px;padding:9px 1.25rem;font-size:14px;cursor:pointer;color:#444;border-left:3px solid transparent;transition:background 0.15s}
+.aside-item:hover{background:#f5f5f3}
+.aside-item.active{color:var(--accent);border-left-color:var(--accent);background:var(--accent-light);font-weight:500}
+.aside-icon{width:16px;height:16px;opacity:0.7;flex-shrink:0}
+.alert-dot{width:7px;height:7px;border-radius:50%;background:var(--danger);margin-left:auto;flex-shrink:0}
+main{margin-left:var(--sidebar-w);margin-top:var(--nav-h);padding:2rem;min-height:calc(100vh - var(--nav-h))}
+.page{display:none}.page.active{display:block}
+h2{font-size:18px;font-weight:500;margin-bottom:1.5rem}
+h3{font-size:15px;font-weight:500;margin-bottom:1rem}
+.card{background:#fff;border:0.5px solid var(--border);border-radius:12px;padding:1.25rem}
+.metric-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:1.5rem}
+.metric{background:#f5f5f3;border-radius:8px;padding:1rem}
+.metric-label{font-size:12px;color:var(--muted);margin-bottom:6px}
+.metric-val{font-size:24px;font-weight:500}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;font-weight:500;font-size:12px;color:var(--muted);padding:8px 12px;border-bottom:0.5px solid var(--border);white-space:nowrap}
+td{padding:9px 12px;border-bottom:0.5px solid #f0ede8;vertical-align:middle}
+tr:hover td{background:#fafaf8}
+.badge{display:inline-block;font-size:11px;padding:2px 9px;border-radius:20px;font-weight:500}
+.badge-blue{background:var(--accent-light);color:var(--accent)}
+.badge-green{background:var(--success-light);color:var(--success)}
+.badge-warn{background:var(--warn-light);color:var(--warn)}
+.badge-danger{background:var(--danger-light);color:var(--danger)}
+.badge-gray{background:#f1efe8;color:#5f5e5a}
+.badge-so1{background:#FDE8D8;color:#8B3A0F}
+.badge-so2{background:#E8F4D8;color:#3A6B0F}
+.badge-so3{background:#D8E8FD;color:#0F3A8B}
+.badge-so4{background:#F4D8FD;color:#6B0F8B}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;border:0.5px solid var(--border);background:#fff;color:#1a1a1a;transition:background 0.15s}
+.btn:hover{background:#f5f5f3}
+.btn-primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+.btn-primary:hover{background:#0C447C}
+.btn-sm{padding:4px 10px;font-size:12px}
+.btn-danger{background:var(--danger-light);color:var(--danger);border-color:var(--danger)}
+.btn-row{display:flex;gap:8px;margin-bottom:1.5rem;align-items:center;flex-wrap:wrap}
+.btn-row .spacer{flex:1}
+.kanban{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;overflow-x:auto;padding-bottom:1rem}
+.kanban-col{background:#f5f5f3;border-radius:10px;padding:12px;min-height:300px}
+.kanban-col-header{font-size:12px;font-weight:500;color:var(--muted);margin-bottom:12px;display:flex;justify-content:space-between;align-items:center}
+.kanban-card{background:#fff;border:0.5px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:8px;cursor:pointer;transition:border-color 0.15s}
+.kanban-card:hover{border-color:#b4b2a9}
+.kanban-card.overdue{border-left:3px solid var(--danger)}
+.kanban-card.due-today{border-left:3px solid var(--warn)}
+.kanban-card.due-soon{border-left:3px solid var(--accent)}
+.kanban-card-title{font-size:13px;font-weight:500;margin-bottom:3px}
+.kanban-card-sub{font-size:11px;color:var(--muted)}
+.kanban-card-footer{display:flex;justify-content:space-between;align-items:center;margin-top:8px;gap:4px;flex-wrap:wrap}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.35);z-index:200;align-items:flex-start;justify-content:center;padding-top:40px;overflow-y:auto}
+.modal-overlay.open{display:flex}
+.modal{background:#fff;border-radius:14px;padding:1.75rem;width:680px;max-width:95vw;margin-bottom:40px}
+.modal h3{margin-bottom:1.25rem}
+.form-row{margin-bottom:1rem}
+label{display:block;font-size:12px;color:var(--muted);margin-bottom:4px}
+input,select,textarea{width:100%;padding:8px 10px;border:0.5px solid var(--border);border-radius:8px;font-size:13px;background:#fff;color:#1a1a1a;font-family:inherit}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
+textarea{resize:vertical;min-height:70px}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.modal-footer{display:flex;justify-content:flex-end;gap:8px;margin-top:1.25rem;padding-top:1rem;border-top:0.5px solid var(--border)}
+.email-box{width:100%;min-height:130px;padding:10px;border:0.5px solid var(--border);border-radius:8px;font-size:12px;font-family:inherit;resize:vertical;background:#fafaf8}
+.parsed-preview{background:var(--accent-light);border-radius:10px;padding:1rem;margin-top:1rem;font-size:13px}
+.parsed-row{display:flex;gap:8px;padding:4px 0;border-bottom:0.5px solid rgba(24,95,165,0.15)}
+.parsed-row:last-child{border-bottom:none}
+.parsed-key{color:var(--accent);font-weight:500;min-width:130px;font-size:12px}
+.search-bar{padding:7px 12px;border:0.5px solid var(--border);border-radius:8px;font-size:13px;background:#fff;width:190px}
+.search-bar:focus{outline:none;border-color:var(--accent)}
+select.filter{padding:7px 10px;border:0.5px solid var(--border);border-radius:8px;font-size:13px;background:#fff;cursor:pointer}
+.progress-wrap{background:#f1efe8;border-radius:20px;height:6px;overflow:hidden}
+.progress-bar{height:100%;border-radius:20px;background:var(--accent)}
+.hist-entry{padding:10px 12px;border-left:3px solid var(--border);margin-bottom:8px;background:#fafaf8;border-radius:0 8px 8px 0}
+.hist-entry.email{border-left-color:var(--accent)}
+.hist-entry.llamada{border-left-color:var(--success)}
+.hist-entry.reunion{border-left-color:var(--warn)}
+.hist-entry.nota{border-left-color:#b4b2a9}
+.hist-meta{font-size:11px;color:var(--muted);margin-bottom:3px;display:flex;gap:8px;flex-wrap:wrap}
+.hist-text{font-size:13px;line-height:1.5}
+.alert-item{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border-radius:8px;margin-bottom:8px;font-size:13px;cursor:pointer}
+.alert-item.danger{background:var(--danger-light);color:var(--danger)}
+.alert-item.warn{background:var(--warn-light);color:var(--warn)}
+.alert-item.info{background:var(--accent-light);color:var(--accent)}
+.alert-item-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:4px;background:currentColor}
+.tabs{display:flex;gap:0;border-bottom:0.5px solid var(--border);margin-bottom:1.25rem}
+.tab{padding:8px 16px;font-size:13px;cursor:pointer;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-0.5px}
+.tab.active{color:var(--accent);border-bottom-color:var(--accent);font-weight:500}
+.oferta-mode{display:flex;gap:8px;margin-bottom:1rem}
+.oferta-btn{flex:1;padding:10px;border:1.5px solid var(--border);border-radius:8px;font-size:12px;font-weight:500;cursor:pointer;text-align:center;background:#fff;transition:all 0.15s;color:#444}
+.oferta-btn.active{border-color:var(--accent);background:var(--accent-light);color:var(--accent)}
+/* Clientes */
+.client-new-flag{background:var(--warn-light);color:var(--warn);border:0.5px solid var(--warn);border-radius:8px;padding:8px 12px;font-size:12px;margin-bottom:1rem}
+</style>
+</head>
+<body>
+<nav>
+  <div class="nav-logo">CRM <span>Stock Obsoleto</span></div>
+  <div class="spacer"></div>
+  <div class="nav-badge" id="nav-refs">0 referencias</div>
+  <div class="nav-badge" id="nav-ops" style="margin-left:6px">0 oportunidades</div>
+</nav>
+<aside>
+  <div class="aside-item active" onclick="showPage('dashboard',this)">
+    <svg class="aside-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="1" width="6" height="6" rx="1.5"/><rect x="9" y="1" width="6" height="6" rx="1.5"/><rect x="1" y="9" width="6" height="6" rx="1.5"/><rect x="9" y="9" width="6" height="6" rx="1.5"/></svg>
+    Dashboard
+    <span id="alert-dot" class="alert-dot" style="display:none"></span>
+  </div>
+  <div class="aside-item" onclick="showPage('catalogo',this)">
+    <svg class="aside-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="12" height="12" rx="1.5"/><line x1="5" y1="6" x2="11" y2="6"/><line x1="5" y1="9" x2="11" y2="9"/><line x1="5" y1="12" x2="8" y2="12"/></svg>
+    Catálogo
+  </div>
+  <div class="aside-item" onclick="showPage('clientes',this)">
+    <svg class="aside-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="5" r="3"/><path d="M2 14c0-3 2.7-5 6-5s6 2 6 5"/></svg>
+    Clientes
+  </div>
+  <div class="aside-item" onclick="showPage('pipeline',this)">
+    <svg class="aside-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="3" cy="8" r="2"/><circle cx="8" cy="3" r="2"/><circle cx="13" cy="8" r="2"/><circle cx="8" cy="13" r="2"/><line x1="5" y1="8" x2="11" y2="8"/><line x1="8" y1="5" x2="8" y2="11"/></svg>
+    Pipeline
+  </div>
+  <div class="aside-item" onclick="showPage('email',this)">
+    <svg class="aside-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="3" width="14" height="10" rx="1.5"/><polyline points="1,3 8,9 15,3"/></svg>
+    Procesar email
+  </div>
+</aside>
+<main>
+
+<!-- DASHBOARD -->
+<div class="page active" id="page-dashboard">
+  <h2>Dashboard</h2>
+  <div class="metric-grid">
+    <div class="metric"><div class="metric-label">Referencias catálogo</div><div class="metric-val" id="d-refs">0</div></div>
+    <div class="metric"><div class="metric-label">Clientes en cartera</div><div class="metric-val" id="d-clis">0</div></div>
+    <div class="metric"><div class="metric-label">Oportunidades activas</div><div class="metric-val" id="d-ops">0</div></div>
+    <div class="metric"><div class="metric-label">Valor pipeline (€)</div><div class="metric-val" id="d-valor">0</div></div>
+    <div class="metric"><div class="metric-label">Pedidos confirmados</div><div class="metric-val" id="d-ped">0</div></div>
+  </div>
+  <div class="card" style="margin-bottom:1.5rem">
+    <h3>Alertas de seguimiento</h3>
+    <div id="d-alerts"><p style="color:var(--muted);font-size:13px">Sin alertas pendientes.</p></div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem">
+    <div class="card"><h3>Pipeline por estado</h3><div id="d-pipeline-bars"></div></div>
+    <div class="card"><h3>Top referencias más ofertadas</h3><div id="d-top-refs"><p style="color:var(--muted);font-size:13px">Sin datos aún.</p></div></div>
+  </div>
+  <div class="card" style="margin-top:1.5rem"><h3>Actividad por comercial</h3><div id="d-comerciales"><p style="color:var(--muted);font-size:13px">Sin datos aún.</p></div></div>
+</div>
+
+<!-- CATÁLOGO -->
+<div class="page" id="page-catalogo">
+  <h2>Catálogo de producto</h2>
+  <div class="btn-row">
+    <button class="btn btn-primary" onclick="document.getElementById('file-input').click()">Importar Excel</button>
+    <input type="file" id="file-input" accept=".csv,.xlsx,.xls" style="display:none" onchange="handleFileImport(event)"/>
+    <input type="text" class="search-bar" placeholder="Código o descripción..." id="cat-search" oninput="renderCatalogo()"/>
+    <select class="filter" id="cat-so" onchange="renderCatalogo()">
+      <option value="">Todas las superofertas</option>
+      <option value="SUPEROFERTAS1">Superoferta 1</option>
+      <option value="SUPEROFERTAS2">Superoferta 2</option>
+      <option value="SUPEROFERTAS3">Superoferta 3</option>
+      <option value="SUPEROFERTAS4">Superoferta 4</option>
+    </select>
+    <select class="filter" id="cat-cat" onchange="renderCatalogo()"><option value="">Todas las categorías</option></select>
+    <select class="filter" id="cat-col" onchange="renderCatalogo()"><option value="">Todas las colecciones</option></select>
+    <div class="spacer"></div>
+    <span style="font-size:13px;color:var(--muted)" id="cat-count">0 referencias</span>
+  </div>
+  <div class="card" style="padding:0;overflow:hidden;overflow-x:auto">
+    <table>
+      <thead><tr><th>Código</th><th>Superoferta</th><th>Categoría</th><th>Colección</th><th>Descripción</th><th>Stock Uds.</th><th>Stock €</th><th>Precio Venta</th><th>Op.</th></tr></thead>
+      <tbody id="cat-body"><tr><td colspan="9" style="text-align:center;padding:2rem;color:var(--muted)">Importa el Excel para cargar el catálogo</td></tr></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- CLIENTES -->
+<div class="page" id="page-clientes">
+  <h2>Directorio de clientes</h2>
+  <div class="btn-row">
+    <input type="text" class="search-bar" placeholder="Buscar cliente..." id="cli-search" oninput="renderClientes()"/>
+    <select class="filter" id="cli-agente" onchange="renderClientes()"><option value="">Todos los agentes</option></select>
+    <select class="filter" id="cli-pais" onchange="renderClientes()"><option value="">Todos los países</option></select>
+    <div class="spacer"></div>
+    <span style="font-size:13px;color:var(--muted)" id="cli-count">0 clientes</span>
+  </div>
+  <div class="card" style="padding:0;overflow:hidden">
+    <table>
+      <thead><tr><th>Código</th><th>Nombre cliente</th><th>País</th><th>Agente comercial</th><th>Oportunidades</th></tr></thead>
+      <tbody id="cli-body"><tr><td colspan="5" style="text-align:center;padding:2rem;color:var(--muted)">Importa el Excel para cargar los clientes</td></tr></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- PIPELINE -->
+<div class="page" id="page-pipeline">
+  <h2>Pipeline de oportunidades</h2>
+  <div class="btn-row">
+    <button class="btn btn-primary" onclick="openNewOp()">+ Nueva oportunidad</button>
+    <select class="filter" id="pip-comercial" onchange="renderPipeline()"><option value="">Todos los comerciales</option></select>
+    <div class="spacer"></div>
+  </div>
+  <div class="kanban" id="kanban-board"></div>
+</div>
+
+<!-- EMAIL -->
+<div class="page" id="page-email">
+  <h2>Procesar email con IA</h2>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem">
+    <div class="card">
+      <h3>Pega el texto del email</h3>
+      <textarea class="email-box" id="email-text" placeholder="Copia y pega aquí el contenido del email de oferta..."></textarea>
+      <div style="margin-top:12px">
+        <button class="btn btn-primary" onclick="procesarEmail()">Analizar con IA</button>
+        <span id="email-status" style="font-size:12px;color:var(--muted);margin-left:12px"></span>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Datos extraídos</h3>
+      <div id="parsed-result"><p style="color:var(--muted);font-size:13px">Los datos extraídos aparecerán aquí para confirmar antes de crear la oportunidad.</p></div>
+    </div>
+  </div>
+  <div class="card" style="margin-top:1.5rem">
+    <h3>Conexión Gmail OAuth — próximamente</h3>
+    <p style="font-size:13px;color:var(--muted);line-height:1.7">La integración con Gmail leerá automáticamente los emails donde estés en copia. Requiere credenciales de Google Cloud Console.</p>
+  </div>
+</div>
+</main>
+
+<!-- MODAL NUEVA/EDITAR OPORTUNIDAD -->
+<div class="modal-overlay" id="modal-op">
+  <div class="modal">
+    <h3 id="modal-op-title">Nueva oportunidad</h3>
+    <div class="form-grid">
+      <div class="form-row">
+        <label>Cliente</label>
+        <input type="text" id="op-cliente-text" placeholder="Escribe para buscar..." oninput="buscarCliente(this.value)" autocomplete="off"/>
+        <div id="op-cliente-sugg" style="position:relative"></div>
+        <input type="hidden" id="op-cliente-cod"/>
+      </div>
+      <div class="form-row"><label>Contacto</label><input type="text" id="op-contacto" placeholder="Nombre contacto"/></div>
+      <div class="form-row"><label>Agente comercial</label><input type="text" id="op-comercial" placeholder="Se rellena automáticamente"/></div>
+      <div class="form-row"><label>Valor estimado (€)</label><input type="number" id="op-valor" placeholder="0"/></div>
+      <div class="form-row"><label>Estado</label>
+        <select id="op-estado">
+          <option value="oferta">Oferta enviada</option>
+          <option value="seguimiento">Seguimiento</option>
+          <option value="interes">Interés en referencias concretas</option>
+          <option value="pedido">Pedido confirmado</option>
+          <option value="descartada">Descartada</option>
+        </select>
+      </div>
+      <div class="form-row"><label>Próximo contacto</label><input type="date" id="op-prox"/></div>
+      <div class="form-row"><label>Fecha estimada cierre</label><input type="date" id="op-fecha"/></div>
+      <div class="form-row"><label>Email cliente</label><input type="text" id="op-email" placeholder="cliente@empresa.com"/></div>
+    </div>
+
+    <!-- Modalidad de oferta -->
+    <div class="form-row">
+      <label>Modalidad de oferta</label>
+      <div class="oferta-mode">
+        <div class="oferta-btn active" id="mode-codigos" onclick="setOfertaMode('codigos')">📋 Códigos concretos</div>
+        <div class="oferta-btn" id="mode-coleccion" onclick="setOfertaMode('coleccion')">📦 Colección/Categoría</div>
+        <div class="oferta-btn" id="mode-catalogo" onclick="setOfertaMode('catalogo')">🗂️ Catálogo completo</div>
+      </div>
+    </div>
+    <div id="oferta-codigos" class="form-row"><label>Códigos ofertados (separados por coma)</label><input type="text" id="op-refs" placeholder="27955CI/1508, E27011CI/1508..."/></div>
+    <div id="oferta-coleccion" class="form-row" style="display:none">
+      <label>Selecciona categoría / colección / superoferta</label>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+        <select id="op-col-so"><option value="">Superoferta...</option><option>SUPEROFERTAS1</option><option>SUPEROFERTAS2</option><option>SUPEROFERTAS3</option><option>SUPEROFERTAS4</option></select>
+        <select id="op-col-cat"><option value="">Categoría...</option></select>
+        <select id="op-col-col"><option value="">Colección...</option></select>
+      </div>
+    </div>
+    <div id="oferta-catalogo" class="form-row" style="display:none">
+      <div style="background:var(--accent-light);color:var(--accent);border-radius:8px;padding:10px 14px;font-size:13px">✓ Se registrará como oferta de catálogo completo (<span id="total-refs-count">0</span> referencias)</div>
+    </div>
+
+    <div class="form-row"><label>Notas</label><textarea id="op-notas" placeholder="Contexto, observaciones..."></textarea></div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('modal-op')">Cancelar</button>
+      <button class="btn btn-primary" onclick="guardarOportunidad()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL DETALLE -->
+<div class="modal-overlay" id="modal-detalle">
+  <div class="modal" style="width:720px">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1.25rem">
+      <div>
+        <h3 id="det-title" style="margin-bottom:4px"></h3>
+        <div id="det-meta" style="font-size:12px;color:var(--muted)"></div>
+      </div>
+      <div style="display:flex;gap:8px;flex-shrink:0">
+        <button class="btn btn-sm" onclick="editarOportunidad()">Editar</button>
+        <button class="btn btn-sm btn-danger" onclick="eliminarOportunidad()">Eliminar</button>
+        <button class="btn btn-sm" onclick="closeModal('modal-detalle')">Cerrar</button>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:1.25rem">
+      <div style="background:#f5f5f3;border-radius:8px;padding:10px 12px"><div style="font-size:11px;color:var(--muted)">Estado</div><div id="det-estado" style="font-size:13px;font-weight:500;margin-top:2px"></div></div>
+      <div style="background:#f5f5f3;border-radius:8px;padding:10px 12px"><div style="font-size:11px;color:var(--muted)">Valor</div><div id="det-valor" style="font-size:13px;font-weight:500;margin-top:2px"></div></div>
+      <div style="background:#f5f5f3;border-radius:8px;padding:10px 12px"><div style="font-size:11px;color:var(--muted)">Próximo contacto</div><div id="det-prox" style="font-size:13px;font-weight:500;margin-top:2px"></div></div>
+    </div>
+    <div id="det-refs" style="margin-bottom:1.25rem;font-size:13px;line-height:2"></div>
+    <div class="tabs">
+      <div class="tab active" onclick="switchTab('hist')">Historial</div>
+      <div class="tab" onclick="switchTab('nueva')">+ Nueva interacción</div>
+    </div>
+    <div id="tab-hist"><div id="det-historial"><p style="color:var(--muted);font-size:13px">Sin interacciones.</p></div></div>
+    <div id="tab-nueva" style="display:none">
+      <div class="form-grid" style="margin-bottom:1rem">
+        <div class="form-row"><label>Tipo</label><select id="int-tipo"><option value="email">Email</option><option value="llamada">Llamada</option><option value="reunion">Reunión</option><option value="nota">Nota interna</option></select></div>
+        <div class="form-row"><label>Fecha</label><input type="date" id="int-fecha"/></div>
+      </div>
+      <div class="form-row"><label>Nuevo estado</label>
+        <select id="int-estado">
+          <option value="">Sin cambio</option>
+          <option value="oferta">Oferta enviada</option>
+          <option value="seguimiento">Seguimiento</option>
+          <option value="interes">Interés en referencias concretas</option>
+          <option value="pedido">Pedido confirmado</option>
+          <option value="descartada">Descartada</option>
+        </select>
+      </div>
+      <div class="form-row"><label>Próximo contacto</label><input type="date" id="int-prox"/></div>
+      <div class="form-row"><label>Descripción</label><textarea id="int-desc" placeholder="Resumen de la interacción..."></textarea></div>
+      <div style="display:flex;justify-content:flex-end;margin-top:8px"><button class="btn btn-primary" onclick="guardarInteraccion()">Guardar</button></div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+const ESTADOS={oferta:{label:'Oferta enviada',color:'badge-blue'},seguimiento:{label:'Seguimiento',color:'badge-warn'},interes:{label:'Interés concreto',color:'badge-blue'},pedido:{label:'Pedido confirmado',color:'badge-green'},descartada:{label:'Descartada',color:'badge-danger'}};
+const TIPO_HIST={email:'Email',llamada:'Llamada',reunion:'Reunión',nota:'Nota'};
+const SO_BADGE={SUPEROFERTAS1:'badge-so1',SUPEROFERTAS2:'badge-so2',SUPEROFERTAS3:'badge-so3',SUPEROFERTAS4:'badge-so4'};
+const SO_LABEL={SUPEROFERTAS1:'SO1',SUPEROFERTAS2:'SO2',SUPEROFERTAS3:'SO3',SUPEROFERTAS4:'SO4'};
+
+let catalogo=[],clientes=[],oportunidades=[],opActual=null,ofertaMode='codigos';
+
+function save(){try{localStorage.setItem('crm_cat',JSON.stringify(catalogo));localStorage.setItem('crm_cli',JSON.stringify(clientes));localStorage.setItem('crm_ops',JSON.stringify(oportunidades));}catch(e){}}
+function load(){try{catalogo=JSON.parse(localStorage.getItem('crm_cat')||'[]');clientes=JSON.parse(localStorage.getItem('crm_cli')||'[]');oportunidades=JSON.parse(localStorage.getItem('crm_ops')||'[]');}catch(e){}}
+
+function today(){return new Date().toISOString().slice(0,10)}
+function addDays(d,n){const dt=new Date(d);dt.setDate(dt.getDate()+n);return dt.toISOString().slice(0,10)}
+function fmtDate(d){if(!d)return '-';const[y,m,dd]=d.split('-');return`${dd}/${m}/${y}`}
+function alertLevel(prox){if(!prox)return null;const t=today();if(prox<t)return'danger';if(prox===t)return'warn';if(prox<=addDays(t,7))return'info';return null;}
+function gc(r,k){return r[k]??''}
+
+function showPage(p,el){
+  document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.aside-item').forEach(x=>x.classList.remove('active'));
+  document.getElementById('page-'+p).classList.add('active');
+  if(el)el.classList.add('active');
+  if(p==='catalogo')renderCatalogo();
+  if(p==='pipeline')renderPipeline();
+  if(p==='dashboard')renderDashboard();
+  if(p==='clientes')renderClientes();
+}
+function openModal(id){document.getElementById(id).classList.add('open')}
+function closeModal(id){document.getElementById(id).classList.remove('open')}
+document.querySelectorAll('.modal-overlay').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open')}));
+
+function switchTab(t){
+  document.querySelectorAll('.tab').forEach((el,i)=>el.classList.toggle('active',i===(t==='hist'?0:1)));
+  document.getElementById('tab-hist').style.display=t==='hist'?'block':'none';
+  document.getElementById('tab-nueva').style.display=t==='nueva'?'block':'none';
+  if(t==='nueva'){document.getElementById('int-fecha').value=today();document.getElementById('int-prox').value='';}
+}
+
+function setOfertaMode(mode){
+  ofertaMode=mode;
+  ['codigos','coleccion','catalogo'].forEach(m=>{
+    document.getElementById('mode-'+m).classList.toggle('active',m===mode);
+    document.getElementById('oferta-'+m).style.display=m===mode?'block':'none';
+  });
+  if(mode==='catalogo')document.getElementById('total-refs-count').textContent=catalogo.length;
+}
+
+function handleFileImport(e){
+  const file=e.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    try{
+      const wb=XLSX.read(ev.target.result,{type:'binary'});
+      // Hoja 1: producto
+      if(wb.SheetNames[0]){
+        const rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{defval:''});
+        catalogo=rows.map((r,i)=>({_id:i+1,...r}));
+        // Poblar filtros categoría y colección
+        const cats=[...new Set(catalogo.map(r=>gc(r,'Categoria')).filter(Boolean))].sort();
+        const cols=[...new Set(catalogo.map(r=>gc(r,'Colección')).filter(Boolean))].sort();
+        const selCat=document.getElementById('cat-cat');
+        selCat.innerHTML='<option value="">Todas las categorías</option>';
+        cats.forEach(c=>{const o=document.createElement('option');o.value=c;o.textContent=c;selCat.appendChild(o)});
+        const selCol=document.getElementById('cat-col');
+        selCol.innerHTML='<option value="">Todas las colecciones</option>';
+        cols.forEach(c=>{const o=document.createElement('option');o.value=c;o.textContent=c;selCol.appendChild(o)});
+        // Poblar selects de colección en modal oportunidad
+        const opColCat=document.getElementById('op-col-cat');
+        opColCat.innerHTML='<option value="">Categoría...</option>';
+        cats.forEach(c=>{const o=document.createElement('option');o.value=c;o.textContent=c;opColCat.appendChild(o)});
+        const opColCol=document.getElementById('op-col-col');
+        opColCol.innerHTML='<option value="">Colección...</option>';
+        cols.forEach(c=>{const o=document.createElement('option');o.value=c;o.textContent=c;opColCol.appendChild(o)});
+      }
+      // Hoja 2: clientes
+      if(wb.SheetNames[1]){
+        const rows2=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[1]],{defval:''});
+        clientes=rows2.map((r,i)=>({_id:i+1,...r}));
+        poblarFiltrosClientes();
+      }
+      save();updateNavBadges();renderCatalogo();
+      alert('✓ Importación completada: '+catalogo.length+' referencias y '+clientes.length+' clientes.');
+    }catch(err){alert('Error: '+err.message);}
+  };
+  reader.readAsBinaryString(file);e.target.value='';
+}
+
+function poblarFiltrosClientes(){
+  const agentes=[...new Set(clientes.map(c=>gc(c,'Agente Comercial')).filter(Boolean))].sort();
+  const paises=[...new Set(clientes.map(c=>gc(c,'Pais Cliente')).filter(Boolean))].sort();
+  ['cli-agente','pip-comercial'].forEach(id=>{
+    const sel=document.getElementById(id);
+    const val=sel.value;
+    sel.innerHTML=id==='pip-comercial'?'<option value="">Todos los comerciales</option>':'<option value="">Todos los agentes</option>';
+    agentes.forEach(a=>{const o=document.createElement('option');o.value=a;o.textContent=a;sel.appendChild(o)});
+    if(val)sel.value=val;
+  });
+  const selPais=document.getElementById('cli-pais');
+  selPais.innerHTML='<option value="">Todos los países</option>';
+  paises.forEach(p=>{const o=document.createElement('option');o.value=p;o.textContent=p;selPais.appendChild(o)});
+}
+
+function renderCatalogo(){
+  const q=(document.getElementById('cat-search').value||'').toLowerCase();
+  const so=document.getElementById('cat-so').value;
+  const cat=document.getElementById('cat-cat').value;
+  const col=document.getElementById('cat-col').value;
+  const filtered=catalogo.filter(r=>{
+    const cod=String(gc(r,'Codigo')).toLowerCase();
+    const desc=String(gc(r,'Descripción')).toLowerCase();
+    const desc2=String(gc(r,'Descripción 2')).toLowerCase();
+    return(!q||(cod.includes(q)||desc.includes(q)||desc2.includes(q)))
+      &&(!so||gc(r,'Item Disc_ Group')===so)
+      &&(!cat||gc(r,'Categoria')===cat)
+      &&(!col||gc(r,'Colección')===col);
+  });
+  document.getElementById('cat-count').textContent=filtered.length+' referencias';
+  const tbody=document.getElementById('cat-body');
+  if(!filtered.length){tbody.innerHTML='<tr><td colspan="9" style="text-align:center;padding:2rem;color:var(--muted)">Sin resultados</td></tr>';return;}
+  tbody.innerHTML=filtered.slice(0,200).map(r=>{
+    const cod=gc(r,'Codigo')||'-';
+    const soVal=gc(r,'Item Disc_ Group')||'';
+    const ops=oportunidades.filter(o=>opIncludeRef(o,String(cod))).length;
+    return`<tr>
+      <td style="font-weight:500;font-size:12px;white-space:nowrap">${cod}</td>
+      <td>${soVal?`<span class="badge ${SO_BADGE[soVal]||'badge-gray'}">${SO_LABEL[soVal]||soVal}</span>`:'-'}</td>
+      <td><span class="badge badge-gray" style="font-size:10px">${gc(r,'Categoria')||'-'}</span></td>
+      <td style="font-size:12px">${gc(r,'Colección')||'-'}</td>
+      <td style="font-size:12px">${gc(r,'Descripción')||'-'}</td>
+      <td style="font-size:12px;text-align:right">${gc(r,'Stock Uds.')||'-'}</td>
+      <td style="font-size:12px;text-align:right">${gc(r,'Stock €')||'-'}</td>
+      <td style="font-size:12px;text-align:right;font-weight:500">${gc(r,'Precio Venta')?gc(r,'Precio Venta')+'€':'-'}</td>
+      <td>${ops>0?`<span class="badge badge-blue">${ops}</span>`:'-'}</td>
+    </tr>`;
+  }).join('');
+}
+
+function renderClientes(){
+  const q=(document.getElementById('cli-search').value||'').toLowerCase();
+  const agente=document.getElementById('cli-agente').value;
+  const pais=document.getElementById('cli-pais').value;
+  const filtered=clientes.filter(c=>{
+    const nom=String(gc(c,'Nombre Cliente')).toLowerCase();
+    const cod=String(gc(c,'Codigo Cliente')).toLowerCase();
+    return(!q||(nom.includes(q)||cod.includes(q)))&&(!agente||gc(c,'Agente Comercial')===agente)&&(!pais||gc(c,'Pais Cliente')===pais);
+  });
+  document.getElementById('cli-count').textContent=filtered.length+' clientes';
+  const tbody=document.getElementById('cli-body');
+  if(!filtered.length){tbody.innerHTML='<tr><td colspan="5" style="text-align:center;padding:2rem;color:var(--muted)">Sin resultados</td></tr>';return;}
+  tbody.innerHTML=filtered.map(c=>{
+    const cod=gc(c,'Codigo Cliente');
+    const ops=oportunidades.filter(o=>o.clienteCod===cod).length;
+    return`<tr>
+      <td style="font-size:12px;font-weight:500">${cod}</td>
+      <td style="font-size:13px">${gc(c,'Nombre Cliente')}</td>
+      <td style="font-size:12px">${gc(c,'Pais Cliente')}</td>
+      <td style="font-size:12px">${gc(c,'Agente Comercial')}</td>
+      <td>${ops>0?`<span class="badge badge-blue">${ops} op.</span>`:'-'}</td>
+    </tr>`;
+  }).join('');
+}
+
+function buscarCliente(q){
+  const sugg=document.getElementById('op-cliente-sugg');
+  if(!q||q.length<2){sugg.innerHTML='';return;}
+  const matches=clientes.filter(c=>{
+    const nom=String(gc(c,'Nombre Cliente')).toLowerCase();
+    const cod=String(gc(c,'Codigo Cliente')).toLowerCase();
+    return nom.includes(q.toLowerCase())||cod.includes(q.toLowerCase());
+  }).slice(0,6);
+  if(!matches.length){sugg.innerHTML='';return;}
+  sugg.innerHTML=`<div style="position:absolute;top:2px;left:0;right:0;background:#fff;border:0.5px solid var(--border);border-radius:8px;z-index:300;box-shadow:0 4px 12px rgba(0,0,0,0.1)">
+    ${matches.map(c=>`<div style="padding:8px 12px;font-size:13px;cursor:pointer;border-bottom:0.5px solid #f0ede8" 
+      onmousedown="seleccionarCliente('${gc(c,'Codigo Cliente').replace(/'/g,"\\'")}','${gc(c,'Nombre Cliente').replace(/'/g,"\\'")}','${gc(c,'Agente Comercial').replace(/'/g,"\\'")}')">
+      <strong style="font-size:12px">${gc(c,'Codigo Cliente')}</strong> — ${gc(c,'Nombre Cliente')} <span style="color:var(--muted);font-size:11px">(${gc(c,'Agente Comercial')})</span>
+    </div>`).join('')}
+  </div>`;
+}
+
+function seleccionarCliente(cod,nom,agente){
+  document.getElementById('op-cliente-text').value=nom;
+  document.getElementById('op-cliente-cod').value=cod;
+  document.getElementById('op-comercial').value=agente;
+  document.getElementById('op-cliente-sugg').innerHTML='';
+}
+
+function opIncludeRef(op,ref){
+  if(op.ofertaMode==='catalogo')return true;
+  if(op.ofertaMode==='coleccion'){
+    const prod=catalogo.find(r=>String(gc(r,'Codigo'))===ref);
+    if(!prod)return false;
+    return(!op.colSO||gc(prod,'Item Disc_ Group')===op.colSO)&&(!op.colCat||gc(prod,'Categoria')===op.colCat)&&(!op.colCol||gc(prod,'Colección')===op.colCol);
+  }
+  return(op.refs||'').split(',').map(x=>x.trim()).includes(ref);
+}
+
+function renderPipeline(){
+  const filtCom=document.getElementById('pip-comercial').value;
+  const ops=filtCom?oportunidades.filter(o=>o.comercial===filtCom):oportunidades;
+  const board=document.getElementById('kanban-board');
+  board.innerHTML=Object.entries(ESTADOS).map(([key,{label}])=>{
+    const col=ops.filter(o=>o.estado===key);
+    const cards=col.map(o=>{
+      const lvl=alertLevel(o.prox);
+      const cls=lvl==='danger'?'overdue':lvl==='warn'?'due-today':lvl==='info'?'due-soon':'';
+      const modeBadge=o.ofertaMode==='catalogo'?'<span class="badge badge-gray" style="font-size:10px">Cat. completo</span>':o.ofertaMode==='coleccion'?'<span class="badge badge-gray" style="font-size:10px">Colección</span>':'';
+      return`<div class="kanban-card ${cls}" onclick="abrirDetalle(${o.id})">
+        <div class="kanban-card-title">${o.cliente||'Sin cliente'}</div>
+        <div class="kanban-card-sub">${o.comercial||''}${o.contacto?' · '+o.contacto:''}</div>
+        <div style="margin-top:4px">${modeBadge}</div>
+        <div class="kanban-card-footer">
+          ${o.prox?`<span style="font-size:10px;color:${lvl==='danger'?'var(--danger)':lvl==='warn'?'var(--warn)':'var(--muted)'}">📅 ${fmtDate(o.prox)}</span>`:'<span></span>'}
+          <span style="font-size:12px;font-weight:500">${o.valor?'€'+Number(o.valor).toLocaleString('es'):''}</span>
+        </div>
+      </div>`;
+    }).join('');
+    return`<div class="kanban-col"><div class="kanban-col-header"><span>${label}</span><span style="background:#e0ddd6;color:#5f5e5a;border-radius:20px;padding:1px 8px;font-size:11px">${col.length}</span></div>${cards||'<p style="font-size:12px;color:var(--muted);text-align:center;margin-top:1rem">Sin oportunidades</p>'}</div>`;
+  }).join('');
+}
+
+function renderDashboard(){
+  document.getElementById('d-refs').textContent=catalogo.length;
+  document.getElementById('d-clis').textContent=clientes.length;
+  const activas=oportunidades.filter(o=>o.estado!=='descartada').length;
+  document.getElementById('d-ops').textContent=activas;
+  const valor=oportunidades.filter(o=>o.estado!=='descartada').reduce((s,o)=>s+(Number(o.valor)||0),0);
+  document.getElementById('d-valor').textContent='€'+valor.toLocaleString('es');
+  document.getElementById('d-ped').textContent=oportunidades.filter(o=>o.estado==='pedido').length;
+  // Alertas
+  const alertas=oportunidades.filter(o=>o.estado!=='descartada'&&o.estado!=='pedido'&&alertLevel(o.prox));
+  document.getElementById('alert-dot').style.display=alertas.length?'block':'none';
+  const aDiv=document.getElementById('d-alerts');
+  if(!alertas.length){aDiv.innerHTML='<p style="color:var(--muted);font-size:13px">Sin alertas pendientes.</p>';}
+  else{
+    aDiv.innerHTML=alertas.sort((a,b)=>a.prox>b.prox?1:-1).map(o=>{
+      const lvl=alertLevel(o.prox);
+      const cls=lvl==='danger'?'danger':lvl==='warn'?'warn':'info';
+      const msg=lvl==='danger'?'Vencida desde '+fmtDate(o.prox):lvl==='warn'?'Contacto hoy':'Próximo contacto '+fmtDate(o.prox);
+      return`<div class="alert-item ${cls}" onclick="abrirDetalle(${o.id})"><div class="alert-item-dot"></div><div><strong>${o.cliente}</strong> — ${o.comercial||''}<br/><span style="font-size:12px;opacity:0.85">${msg}</span></div></div>`;
+    }).join('');
+  }
+  // Pipeline bars
+  const total=oportunidades.length||1;
+  document.getElementById('d-pipeline-bars').innerHTML=Object.entries(ESTADOS).map(([key,{label}])=>{
+    const n=oportunidades.filter(o=>o.estado===key).length;
+    return`<div style="margin-bottom:12px"><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span>${label}</span><span style="font-weight:500">${n}</span></div><div class="progress-wrap"><div class="progress-bar" style="width:${Math.round(n/total*100)}%"></div></div></div>`;
+  }).join('');
+  // Top refs
+  const refCount={};
+  catalogo.forEach(r=>{
+    const cod=String(gc(r,'Codigo'));
+    oportunidades.forEach(o=>{if(opIncludeRef(o,cod))refCount[cod]=(refCount[cod]||0)+1;});
+  });
+  const top=Object.entries(refCount).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  document.getElementById('d-top-refs').innerHTML=top.length
+    ?top.map(([cod,n])=>{
+      const prod=catalogo.find(r=>String(gc(r,'Codigo'))===cod);
+      const desc=prod?gc(prod,'Descripción'):'';
+      const so=prod?gc(prod,'Item Disc_ Group'):'';
+      return`<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:0.5px solid #f0ede8;font-size:13px">
+        <span><strong style="font-size:12px">${cod}</strong>${so?` <span class="badge ${SO_BADGE[so]||'badge-gray'}" style="font-size:10px">${SO_LABEL[so]||so}</span>`:''} <span style="color:var(--muted);font-size:11px">${desc.substring(0,25)}</span></span>
+        <span class="badge badge-blue">${n}</span></div>`;
+    }).join('')
+    :'<p style="color:var(--muted);font-size:13px">Sin datos aún.</p>';
+  // Comerciales
+  const comCount={};
+  oportunidades.forEach(o=>{if(o.comercial)comCount[o.comercial]=(comCount[o.comercial]||0)+1});
+  const comList=Object.entries(comCount).sort((a,b)=>b[1]-a[1]);
+  document.getElementById('d-comerciales').innerHTML=comList.length
+    ?`<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px">${comList.map(([c,n])=>`<div style="background:#f5f5f3;border-radius:8px;padding:10px 12px"><div style="font-size:12px;color:var(--muted);margin-bottom:4px">${c}</div><div style="font-size:20px;font-weight:500">${n}</div><div style="font-size:11px;color:var(--muted)">oportunidades</div></div>`).join('')}</div>`
+    :'<p style="color:var(--muted);font-size:13px">Sin datos aún.</p>';
+}
+
+function openNewOp(){
+  opActual=null;ofertaMode='codigos';
+  document.getElementById('modal-op-title').textContent='Nueva oportunidad';
+  ['op-cliente-text','op-contacto','op-comercial','op-valor','op-fecha','op-refs','op-notas','op-email','op-prox'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('op-cliente-cod').value='';
+  document.getElementById('op-estado').value='oferta';
+  setOfertaMode('codigos');
+  openModal('modal-op');
+}
+
+function guardarOportunidad(){
+  const cliente=document.getElementById('op-cliente-text').value.trim();
+  if(!cliente){alert('El nombre del cliente es obligatorio.');return;}
+  const data={
+    cliente,
+    clienteCod:document.getElementById('op-cliente-cod').value,
+    contacto:document.getElementById('op-contacto').value.trim(),
+    email:document.getElementById('op-email').value.trim(),
+    comercial:document.getElementById('op-comercial').value.trim(),
+    valor:document.getElementById('op-valor').value,
+    estado:document.getElementById('op-estado').value,
+    fecha:document.getElementById('op-fecha').value,
+    prox:document.getElementById('op-prox').value,
+    ofertaMode,
+    refs:ofertaMode==='codigos'?document.getElementById('op-refs').value:'',
+    colSO:ofertaMode==='coleccion'?document.getElementById('op-col-so').value:'',
+    colCat:ofertaMode==='coleccion'?document.getElementById('op-col-cat').value:'',
+    colCol:ofertaMode==='coleccion'?document.getElementById('op-col-col').value:'',
+    notas:document.getElementById('op-notas').value,
+  };
+  // Flag cliente nuevo
+  if(!data.clienteCod&&clientes.length){data.clienteNuevo=true;}
+  if(opActual){
+    const idx=oportunidades.findIndex(o=>o.id===opActual.id);
+    if(idx>=0)oportunidades[idx]={...oportunidades[idx],...data};
+  }else{
+    data.id=Date.now();data.creado=new Date().toISOString();
+    data.historial=data.notas?[{tipo:'nota',fecha:today(),desc:data.notas,estado:data.estado}]:[];
+    oportunidades.push(data);
+  }
+  save();updateNavBadges();closeModal('modal-op');renderPipeline();renderDashboard();
+}
+
+function abrirDetalle(id){
+  const op=oportunidades.find(o=>o.id===id);if(!op)return;
+  opActual=op;
+  document.getElementById('det-title').textContent=op.cliente||'Sin nombre';
+  const metaParts=[op.contacto,op.comercial,op.email].filter(Boolean);
+  document.getElementById('det-meta').innerHTML=(op.clienteNuevo?'<span class="badge badge-warn" style="margin-right:6px">Cliente nuevo</span>':'')+metaParts.join(' · ');
+  document.getElementById('det-estado').innerHTML=`<span class="badge ${ESTADOS[op.estado]?.color||'badge-gray'}">${ESTADOS[op.estado]?.label||op.estado}</span>`;
+  document.getElementById('det-valor').textContent=op.valor?'€'+Number(op.valor).toLocaleString('es'):'-';
+  const lvl=alertLevel(op.prox);
+  document.getElementById('det-prox').innerHTML=op.prox?`<span style="color:${lvl==='danger'?'var(--danger)':lvl==='warn'?'var(--warn)':'inherit'}">${fmtDate(op.prox)}</span>`:'Sin definir';
+  let refsHtml='';
+  if(op.ofertaMode==='catalogo')refsHtml='<span class="badge badge-blue">Catálogo completo</span>';
+  else if(op.ofertaMode==='coleccion'){
+    const parts=[op.colSO&&SO_LABEL[op.colSO],op.colCat,op.colCol].filter(Boolean);
+    refsHtml='<span class="badge badge-gray">Colección: </span> '+parts.map(p=>`<span class="badge badge-gray">${p}</span>`).join(' ');
+  }else if(op.refs){
+    refsHtml=op.refs.split(',').map(r=>`<span class="badge badge-gray" style="margin:2px">${r.trim()}</span>`).join('');
+  }
+  document.getElementById('det-refs').innerHTML=refsHtml?`<div style="font-size:12px;color:var(--muted);margin-bottom:6px">Oferta:</div>${refsHtml}`:'';
+  renderHistorial(op);switchTab('hist');openModal('modal-detalle');
+}
+
+function renderHistorial(op){
+  const hist=(op.historial||[]).slice().reverse();
+  const div=document.getElementById('det-historial');
+  if(!hist.length){div.innerHTML='<p style="color:var(--muted);font-size:13px">Sin interacciones registradas.</p>';return;}
+  div.innerHTML=hist.map(h=>`<div class="hist-entry ${h.tipo||'nota'}">
+    <div class="hist-meta"><span style="font-weight:500">${TIPO_HIST[h.tipo]||'Nota'}</span><span>${fmtDate(h.fecha)}</span>
+    ${h.estado?`<span class="badge ${ESTADOS[h.estado]?.color||'badge-gray'}" style="font-size:10px">${ESTADOS[h.estado]?.label||''}</span>`:''}
+    ${h.proxContacto?`<span>Próx: ${fmtDate(h.proxContacto)}</span>`:''}
+    </div><div class="hist-text">${h.desc||''}</div></div>`).join('');
+}
+
+function guardarInteraccion(){
+  if(!opActual)return;
+  const desc=document.getElementById('int-desc').value.trim();
+  if(!desc){alert('Escribe una descripción.');return;}
+  const nuevoEstado=document.getElementById('int-estado').value;
+  const proxContacto=document.getElementById('int-prox').value;
+  const entrada={tipo:document.getElementById('int-tipo').value,fecha:document.getElementById('int-fecha').value||today(),desc,estado:nuevoEstado||opActual.estado,proxContacto};
+  const idx=oportunidades.findIndex(o=>o.id===opActual.id);
+  if(idx>=0){
+    if(!oportunidades[idx].historial)oportunidades[idx].historial=[];
+    oportunidades[idx].historial.push(entrada);
+    if(nuevoEstado)oportunidades[idx].estado=nuevoEstado;
+    if(proxContacto)oportunidades[idx].prox=proxContacto;
+    opActual=oportunidades[idx];
+  }
+  save();
+  document.getElementById('int-desc').value='';document.getElementById('int-estado').value='';document.getElementById('int-prox').value='';
+  renderHistorial(opActual);switchTab('hist');renderPipeline();renderDashboard();
+}
+
+function editarOportunidad(){
+  if(!opActual)return;
+  closeModal('modal-detalle');
+  document.getElementById('modal-op-title').textContent='Editar oportunidad';
+  document.getElementById('op-cliente-text').value=opActual.cliente||'';
+  document.getElementById('op-cliente-cod').value=opActual.clienteCod||'';
+  document.getElementById('op-contacto').value=opActual.contacto||'';
+  document.getElementById('op-email').value=opActual.email||'';
+  document.getElementById('op-comercial').value=opActual.comercial||'';
+  document.getElementById('op-valor').value=opActual.valor||'';
+  document.getElementById('op-estado').value=opActual.estado||'oferta';
+  document.getElementById('op-fecha').value=opActual.fecha||'';
+  document.getElementById('op-prox').value=opActual.prox||'';
+  document.getElementById('op-refs').value=opActual.refs||'';
+  document.getElementById('op-notas').value=opActual.notas||'';
+  setOfertaMode(opActual.ofertaMode||'codigos');
+  if(opActual.ofertaMode==='coleccion'){
+    document.getElementById('op-col-so').value=opActual.colSO||'';
+    document.getElementById('op-col-cat').value=opActual.colCat||'';
+    document.getElementById('op-col-col').value=opActual.colCol||'';
+  }
+  openModal('modal-op');
+}
+
+function eliminarOportunidad(){
+  if(!opActual||!confirm('¿Eliminar esta oportunidad?'))return;
+  oportunidades=oportunidades.filter(o=>o.id!==opActual.id);
+  opActual=null;save();updateNavBadges();closeModal('modal-detalle');renderPipeline();renderDashboard();
+}
+
+async function procesarEmail(){
+  const texto=document.getElementById('email-text').value.trim();
+  if(!texto){alert('Pega el contenido del email primero.');return;}
+  const status=document.getElementById('email-status');
+  const result=document.getElementById('parsed-result');
+  status.textContent='Analizando...';
+  result.innerHTML='<p style="color:var(--muted);font-size:13px">Procesando con IA...</p>';
+  const clientesList=clientes.slice(0,50).map(c=>`${gc(c,'Codigo Cliente')} - ${gc(c,'Nombre Cliente')} (${gc(c,'Agente Comercial')})`).join('\n');
+  const GEMINI_KEY='AIzaSyA5c9BfxJi5OVJSI5JHMQtx_ZGd0LlB0iU';
+  try{
+    const prompt=`Analiza este email comercial. Extrae en JSON con estas claves: cliente_nombre, cliente_cod (código del cliente si aparece o si coincide con la lista), contacto, agente_comercial, fecha (dd/mm/yyyy o null), codigos_producto (array, vacío si no hay códigos concretos), oferta_tipo ("codigos"|"coleccion"|"catalogo"), coleccion_mencionada (nombre si aplica), valor_estimado (número, 0 si no), notas (resumen 1-2 frases). Lista de clientes conocidos:\n${clientesList}\n\nResponde SOLO JSON sin markdown ni backticks.\n\nEMAIL:\n${texto}`;
+    const resp=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_KEY}`,{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({contents:[{parts:[{text:prompt}]}],generationConfig:{temperature:0.1}})
+    });
+    const data=await resp.json();
+    if(data.error)throw new Error(data.error.message);
+    const txt=data.candidates[0].content.parts[0].text;
+    const parsed=JSON.parse(txt.replace(/```json|```/g,'').trim());
+    status.textContent='';
+    result.innerHTML=`<div class="parsed-preview">
+      ${Object.entries(parsed).map(([k,v])=>`<div class="parsed-row"><span class="parsed-key">${k}</span><span>${Array.isArray(v)?v.join(', '):v??'-'}</span></div>`).join('')}
+      <button class="btn btn-primary" style="margin-top:12px" onclick='crearDesdeEmail(${JSON.stringify(JSON.stringify(parsed))})'>Crear oportunidad</button>
+    </div>`;
+  }catch(err){status.textContent='';result.innerHTML=`<p style="color:var(--danger);font-size:13px">Error: ${err.message}</p>`;}
+}
+
+function crearDesdeEmail(enc){
+  try{
+    const d=JSON.parse(enc);
+    opActual=null;ofertaMode=d.oferta_tipo||'codigos';
+    document.getElementById('modal-op-title').textContent='Nueva oportunidad desde email';
+    document.getElementById('op-cliente-text').value=d.cliente_nombre||'';
+    document.getElementById('op-cliente-cod').value=d.cliente_cod||'';
+    document.getElementById('op-contacto').value=d.contacto||'';
+    document.getElementById('op-comercial').value=d.agente_comercial||'';
+    document.getElementById('op-valor').value=d.valor_estimado||'';
+    document.getElementById('op-refs').value=Array.isArray(d.codigos_producto)?d.codigos_producto.join(', '):'';
+    document.getElementById('op-notas').value=d.notas||'';
+    document.getElementById('op-email').value='';
+    document.getElementById('op-estado').value='oferta';
+    document.getElementById('op-fecha').value='';document.getElementById('op-prox').value='';
+    setOfertaMode(ofertaMode);
+    openModal('modal-op');
+  }catch(e){alert('Error: '+e.message);}
+}
+
+function updateNavBadges(){
+  document.getElementById('nav-refs').textContent=catalogo.length+' referencias';
+  document.getElementById('nav-ops').textContent=oportunidades.length+' oportunidades';
+}
+
+load();updateNavBadges();if(clientes.length)poblarFiltrosClientes();renderDashboard();
+</script>
+</body>
+</html>
