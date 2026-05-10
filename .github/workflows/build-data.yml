@@ -1,0 +1,25 @@
+name: Build static data
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-data:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm install xlsx
+      - run: node scripts/build-data.mjs
+      - name: Commit generated JSON
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "Generate static catalog data"
+          file_pattern: "data/products.json data/customers.json data/collections-images.json"
