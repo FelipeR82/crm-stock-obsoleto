@@ -117,3 +117,5 @@ El proceso `scripts/build-data.mjs` genera `data/collections-images.json` autom�
 - Base de datos compartida.
 
 Los roles actuales sirven para demo estática. No guardes contraseñas reales en el HTML ni en `localStorage`.
+
+Codex indexing check.
