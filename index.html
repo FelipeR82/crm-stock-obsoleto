@@ -530,7 +530,10 @@ input[type=range].sl::-webkit-slider-thumb{-webkit-appearance:none;width:15px;he
       <div class="fsc role-admin-commercial" id="superFilterBlock">
         <div class="fsl">Superofertas</div>
         <div class="pc">
-          <button class="pill" data-g="super" data-v="1" onclick="tpill(this)">Solo superofertas</button>
+          <button class="pill" data-g="super" data-v="SUPEROFERTAS 1" onclick="tpill(this)">Superofertas 1</button>
+          <button class="pill" data-g="super" data-v="SUPEROFERTAS 2" onclick="tpill(this)">Superofertas 2</button>
+          <button class="pill" data-g="super" data-v="SUPEROFERTAS 3" onclick="tpill(this)">Superofertas 3</button>
+          <button class="pill" data-g="super" data-v="SUPEROFERTAS 4" onclick="tpill(this)">Superofertas 4</button>
         </div>
       </div>
       <div class="fsc">
@@ -886,18 +889,24 @@ function normKey(k){return String(k||'').toLowerCase().normalize('NFD').replace(
 function val(row,names,def=''){const wanted=names.map(normKey);for(const k in row){if(wanted.includes(normKey(k)))return row[k]??def;}return def;}
 function num(v,def=0){if(v===null||v===undefined||v==='')return def;const n=parseFloat(String(v).replace(',','.'));return Number.isFinite(n)?n:def;}
 function isTruthy(v){const s=String(v||'').trim().toLowerCase();return /^(1|si|sí|yes|true|x|super|oferta)$/i.test(s)||s.includes('superoferta')||s.includes('super oferta');}
+function normalizeSuperValue(v){
+  const raw=String(v||'').trim().toUpperCase();
+  const m=raw.match(/SUPEROFERTAS?\s*([1-4])/i)||raw.match(/\b([1-4])\b/);
+  if(m)return `SUPEROFERTAS ${m[1]}`;
+  return isTruthy(v)?'SUPEROFERTAS 1':'';
+}
 function normalizeProduct(row){
   return {
     c:String(val(row,['codigo','código','referencia','ref','articulo','artículo'],'')).trim(),
     cat:String(val(row,['categoria','categoría','cat'],'ESPEJOS')).trim().toUpperCase(),
     col:String(val(row,['coleccion','colección','familia','col'],'')).trim(),
-    super:isTruthy(val(row,['superofertas','super oferta','superoferta','oferta especial'],'')),
+    super:normalizeSuperValue(val(row,['superofertas','super oferta','superoferta','oferta especial'],'')),
     d1:String(val(row,['descripcion','descripción','descripcion 1','descripción 1','desc1','d1','descripcion1'],'')).replace(/^E\*/i,'').trim(),
     d2:String(val(row,['descripcion 2','descripción 2','desc2','d2','descripcion2'],'')).trim(),
     med:String(val(row,['medida','medidas','dimension','dimensión','med'],'')).trim(),
     sc:num(val(row,['sensores','sensor','sc'],0),0),
     cct:String(val(row,['cct','temperatura','temperatura color'],'')).trim(),
-    ilum:String(val(row,['iluminacion','iluminación','tipo iluminacion','tipo iluminación'],'Directa')).trim(),
+    ilum:String(val(row,['iluminacion','iluminación','tipo iluminacion','tipo iluminación','tipo de iluminacion','tipo de iluminación'],'Directa')).trim(),
     w:String(val(row,['w','watios','potencia'],'')).trim(),
     voltage:String(val(row,['voltage','voltaje','tension','tensión'],'')).trim(),
     uxc:num(val(row,['uxc','uds caja','unidades caja','unidades por caja','uds/caja'],1),1),
@@ -1187,7 +1196,7 @@ function filteredCatalogProducts(){
   const mobS=document.getElementById('mobSrch');
   srch=document.getElementById('srch').value.toLowerCase()||(mobS?mobS.value.toLowerCase():'');
   const srchCod=document.getElementById('srchcod').value.toLowerCase();
-  return catalogProducts().filter(p=>{if(fCat.size&&!fCat.has(p.cat))return false;if(fIlum.size&&!ilumMatches(p.ilum,fIlum))return false;if(fCct.size&&!cctMatches(p.cct,fCct))return false;if(fSen.size&&!fSen.has(p.sc))return false;if(fSuper.size&&!p.super)return false;if(sMin>0&&p.stk<sMin)return false;if(srch&&!(p.col+' '+p.d1).toLowerCase().includes(srch))return false;if(srchCod&&!p.c.toLowerCase().includes(srchCod))return false;return true;});
+  return catalogProducts().filter(p=>{if(fCat.size&&!fCat.has(p.cat))return false;if(fIlum.size&&!ilumMatches(p.ilum,fIlum))return false;if(fCct.size&&!cctMatches(p.cct,fCct))return false;if(fSen.size&&!fSen.has(p.sc))return false;if(fSuper.size&&!fSuper.has(String(p.super||'').toUpperCase()))return false;if(sMin>0&&p.stk<sMin)return false;if(srch&&!(p.col+' '+p.d1).toLowerCase().includes(srch))return false;if(srchCod&&!p.c.toLowerCase().includes(srchCod))return false;return true;});
 }
 function applyFilters(){
   updateMobFilterBtn();const fp=filteredCatalogProducts();const cols=getColSummaries(fp);
