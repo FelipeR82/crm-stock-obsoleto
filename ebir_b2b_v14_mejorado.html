@@ -50,7 +50,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 /* SIDEBAR */
 .sb{width:var(--sw);flex-shrink:0;background:var(--white);border-right:1px solid var(--border);padding:18px 14px;position:sticky;top:56px;height:calc(100vh - 56px);overflow-y:auto}
 .sbtit{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--navy);margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
-.clrb{font-size:10px;font-weight:600;color:var(--accent);background:none;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;padding:0;display:none}
+.clrb{font-size:10px;font-weight:600;color:var(--accent);background:none;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;padding:0;display:block}
 .clrb.vis{display:block}
 .srch{width:100%;padding:7px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:12px;font-family:'DM Sans',sans-serif;color:var(--text);outline:none;margin-bottom:14px;transition:border-color .2s}
 .srch:focus{border-color:var(--accent)}
@@ -76,7 +76,7 @@ input[type=range].sl::-webkit-slider-thumb{-webkit-appearance:none;width:15px;he
 .vcnt{font-size:13px;color:var(--muted)}
 
 /* COLLECTION GRID */
-.colgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(196px,1fr));gap:14px}
+.colgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:18px}
 .colcard{background:var(--white);border-radius:14px;overflow:hidden;border:1px solid var(--border);transition:transform .2s,box-shadow .2s;cursor:pointer}
 .colcard:hover{transform:translateY(-3px);box-shadow:0 10px 28px rgba(0,0,0,.1)}
 .colimg{height:144px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
@@ -216,7 +216,7 @@ input[type=range].sl::-webkit-slider-thumb{-webkit-appearance:none;width:15px;he
 @keyframes su{from{transform:translateY(16px);opacity:0}to{transform:translateY(0);opacity:1}}
 
 /* GALLERY */
-.gallery-main{border-radius:14px;overflow:hidden;border:1px solid var(--border);height:300px;display:flex;align-items:center;justify-content:center;position:relative;background:linear-gradient(145deg,#e4edf8,#c8d8f0);cursor:pointer;transition:box-shadow .2s}
+.gallery-main{border-radius:14px;overflow:hidden;border:1px solid var(--border);height:420px;display:flex;align-items:center;justify-content:center;position:relative;background:linear-gradient(145deg,#e4edf8,#c8d8f0);cursor:pointer;transition:box-shadow .2s}
 .gallery-main:hover{box-shadow:0 6px 24px rgba(0,0,0,.12)}
 .cdwm{position:absolute;bottom:12px;right:14px;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(13,27,42,.18);font-family:'Playfair Display',serif}
 .gallery-thumbs{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}
@@ -225,6 +225,13 @@ input[type=range].sl::-webkit-slider-thumb{-webkit-appearance:none;width:15px;he
 .gthumb.active{border-color:var(--accent);box-shadow:0 0 0 2px rgba(43,125,233,.2)}
 .gthumb-empty{opacity:.35;cursor:default}
 .gthumb-empty:hover{border-color:var(--border);transform:none}
+.lightbox{display:none;position:fixed;inset:0;z-index:500;background:rgba(13,27,42,.9);align-items:center;justify-content:center;padding:24px}
+.lightbox.open{display:flex}
+.lightbox-content{position:relative;max-width:min(92vw,1280px);max-height:90vh;display:flex;align-items:center;justify-content:center}
+.lightbox img{max-width:100%;max-height:86vh;object-fit:contain;border-radius:10px;background:#fff}
+.lb-btn{position:absolute;top:50%;transform:translateY(-50%);border:none;background:rgba(255,255,255,.92);width:42px;height:42px;border-radius:50%;cursor:pointer;font-size:20px}
+.lb-prev{left:10px}.lb-next{right:10px}
+.lb-close{position:absolute;top:10px;right:10px;border:none;background:rgba(255,255,255,.92);width:42px;height:42px;border-radius:50%;font-size:20px;cursor:pointer}
 
 /* ENHANCED VSUM */
 .vsum{background:var(--white);border-radius:10px;padding:0;margin:0 0 14px;border:1px solid var(--border);overflow:hidden;box-shadow:0 10px 26px rgba(13,27,42,.08)}
@@ -369,6 +376,10 @@ input[type=range].sl::-webkit-slider-thumb{-webkit-appearance:none;width:15px;he
 .filter-drawer-footer{padding:14px 18px;border-top:1px solid var(--border);display:flex;gap:10px}
 .bapply{flex:1;padding:11px;background:var(--navy);color:white;border:none;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer}
 .bclearall{padding:11px 16px;background:var(--white);color:var(--muted);border:1.5px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer}
+@media(min-width:1200px){
+  .colgrid,.oppgrid{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .cdlayout{grid-template-columns:460px 1fr;gap:36px}
+}
 
 @media(max-width:1000px){
   /* Hide desktop sidebar */
@@ -516,7 +527,7 @@ input[type=range].sl::-webkit-slider-thumb{-webkit-appearance:none;width:15px;he
   <div class="body">
     <!-- SIDEBAR -->
     <aside class="sb" id="sb">
-      <div class="sbtit">Filtros <button class="clrb" id="clrb" onclick="clearFilters()">Limpiar</button></div>
+      <div class="sbtit">Filtros <button class="clrb" id="clrb" onclick="clearFilters()">Resetear filtros</button></div>
       <input class="srch" id="srch" placeholder="🔍 Buscar colección…" oninput="applyFilters()">
       <input class="srch" id="srchcod" placeholder="🔍 Buscar por código…" oninput="applyFilters()" style="margin-top:-8px">
       <div class="fsc">
@@ -592,7 +603,7 @@ input[type=range].sl::-webkit-slider-thumb{-webkit-appearance:none;width:15px;he
           <!-- LEFT: image + info -->
           <div>
             <!-- GALLERY -->
-            <div class="gallery-main" id="galleryMain" onclick="showToast('Imágenes de producto disponibles próximamente')">
+            <div class="gallery-main" id="galleryMain" onclick="openLightbox()">
               <span class="cdwm">EBIR</span>
             </div>
             <div class="gallery-thumbs" id="galleryThumbs"></div>
@@ -849,6 +860,14 @@ input[type=range].sl::-webkit-slider-thumb{-webkit-appearance:none;width:15px;he
   </div>
 </div>
 <div class="toast" id="toast"></div>
+<div class="lightbox" id="collectionLightbox" role="dialog" aria-modal="true" aria-label="Galería de imágenes">
+  <button class="lb-close" aria-label="Cerrar galería" onclick="closeLightbox()">✕</button>
+  <div class="lightbox-content">
+    <button class="lb-btn lb-prev" aria-label="Imagen anterior" onclick="lightboxPrev()">‹</button>
+    <img id="lightboxImg" alt="Imagen de colección">
+    <button class="lb-btn lb-next" aria-label="Imagen siguiente" onclick="lightboxNext()">›</button>
+  </div>
+</div>
 
 <script>
 const USERS={
@@ -1106,6 +1125,8 @@ function collectionCardImage(col,cat){
 function renderCollectionGallery(col,cat){
   const gm=document.getElementById('galleryMain'),gt=document.getElementById('galleryThumbs');
   const paths=collectionImagePaths(col);
+  currentGalleryPaths=[...paths];
+  currentGalleryIndex=0;
   const svg=svgFor(col,cat);
   if(!paths.length){
     gm.innerHTML='<div class="gallery-placeholder">'+svg+'</div><span class="cdwm">EBIR</span>';
@@ -1116,7 +1137,12 @@ function renderCollectionGallery(col,cat){
   show(paths[0]);
   gt.innerHTML=paths.map((src,i)=>'<div class="gthumb '+(i===0?'active':'')+'" onclick="selectCollectionImage(this,\''+src.replace(/'/g,"\\'")+'\')"><img class="gallery-img" src="'+esc(src)+'" alt="'+esc(col)+' '+(i+1)+'"></div>').join('');
 }
-function selectCollectionImage(el,src){document.querySelectorAll('.gthumb').forEach(t=>t.classList.remove('active'));el.classList.add('active');const gm=document.getElementById('galleryMain');gm.innerHTML='<img class="gallery-img" src="'+esc(src)+'" alt=""><span class="cdwm">EBIR</span>';}
+function selectCollectionImage(el,src){document.querySelectorAll('.gthumb').forEach(t=>t.classList.remove('active'));el.classList.add('active');currentGalleryIndex=Math.max(0,currentGalleryPaths.indexOf(src));const gm=document.getElementById('galleryMain');gm.innerHTML='<img class="gallery-img" src="'+esc(src)+'" alt=""><span class="cdwm">EBIR</span>';}
+function renderLightboxImage(){const im=document.getElementById('lightboxImg');if(!im||!currentGalleryPaths.length)return;im.src=currentGalleryPaths[currentGalleryIndex];}
+function openLightbox(){if(!currentGalleryPaths.length)return;const lb=document.getElementById('collectionLightbox');lb.classList.add('open');lb.setAttribute('tabindex','-1');lb.focus();renderLightboxImage();}
+function closeLightbox(){document.getElementById('collectionLightbox').classList.remove('open');}
+function lightboxPrev(){if(!currentGalleryPaths.length)return;currentGalleryIndex=(currentGalleryIndex-1+currentGalleryPaths.length)%currentGalleryPaths.length;renderLightboxImage();}
+function lightboxNext(){if(!currentGalleryPaths.length)return;currentGalleryIndex=(currentGalleryIndex+1)%currentGalleryPaths.length;renderLightboxImage();}
 function svgFor(col,cat){const k=col+'|'+cat;if(SC[k])return SC[k];const s=mkSVG(col,cat);SC[k]=s;return s;}
 function mkSVG(col,cat){
   const isApl=cat==='APLIQUES',isOrg=cat==='ORGANIZING MIRROR';
@@ -1141,6 +1167,7 @@ function getDesc(col){return DESCS[col]||DESCS.DEFAULT}
 
 /* ── STATE ──────────────────────────────────────────── */
 let cart=[],selCode=null,curCol=null,curColProds=[];
+let currentGalleryPaths=[],currentGalleryIndex=0;
 let fCat=new Set(),fCct=new Set(),fSen=new Set(),fIlum=new Set(),fSuper=new Set(),sMin=0,srch='';
 let vfMed=new Set(),vfCct=new Set();
 let oppSelected=new Set();
@@ -1486,6 +1513,8 @@ function updateMobFilterBtn(){
   const btn=document.getElementById('mobFilterBtn');
   if(btn)btn.classList.toggle('has-filters',!!hasF);
 }
+document.addEventListener('keydown',e=>{const lb=document.getElementById('collectionLightbox');if(!lb||!lb.classList.contains('open'))return;if(e.key==='Escape')closeLightbox();if(e.key==='ArrowLeft')lightboxPrev();if(e.key==='ArrowRight')lightboxNext();});
+document.getElementById('collectionLightbox').addEventListener('click',e=>{if(e.target.id==='collectionLightbox')closeLightbox();});
 
 function hideMainViews(){['cvdet','offlog','dbview','oppview','favview'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='none';});}
 function showCatalog(){document.getElementById('cvcat').style.display='';hideMainViews();document.getElementById('sb').style.display='';document.getElementById('mobFilterBar').style.display='';curCol=null;selCode=null;}
@@ -1718,6 +1747,21 @@ async function createOfferPDF(offer){
     doc.setTextColor(107,122,141);doc.setFont('helvetica','normal');doc.setFontSize(8);
     [offer.cliente.contacto,offer.cliente.dir,offer.cliente.cif?'CIF: '+offer.cliente.cif:'',offer.cliente.tel?'Tel: '+offer.cliente.tel:''].filter(Boolean).slice(0,4).forEach((l,i)=>doc.text(String(l),116,47+i*4,{maxWidth:74}));
     let y=72;
+    const collections=[...new Set(offer.lines.map(l=>l.col).filter(Boolean))];
+    for(const col of collections){
+      const colPaths=collectionImagePaths(col);
+      if(!colPaths.length)continue;
+      if(y>220){doc.addPage();y=18;}
+      doc.setTextColor(26,26,46);doc.setFont('helvetica','bold');doc.setFontSize(9);doc.text('Colección: '+col,ML,y);y+=6;
+      for(const p of colPaths){
+        const img=await loadImageAsDataURL(p).catch(()=>null);
+        if(!img)continue;
+        if(y>240){doc.addPage();y=18;}
+        doc.addImage(img,'JPEG',ML,y,56,42,undefined,'FAST');
+        y+=46;
+      }
+      y+=3;
+    }
     doc.setFillColor(13,27,42);doc.rect(ML,y,182,8,'F');
     doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');doc.setFontSize(7);
     [[tx(lang,'code'),16],[tx(lang,'desc1'),43],[tx(lang,'desc2'),93],[tx(lang,'qty'),143],[tx(lang,'price'),161],[tx(lang,'subtotal'),190]].forEach(([t,x])=>doc.text(t,x,y+5,{align:x>140?'right':'left'}));
@@ -1744,6 +1788,15 @@ async function createOfferPDF(offer){
   }else{
     await downloadBasicPDF(offer,filename);
   }
+}
+function loadImageAsDataURL(src){
+  return new Promise((resolve,reject)=>{
+    const img=new Image();
+    img.crossOrigin='anonymous';
+    img.onload=()=>{try{const c=document.createElement('canvas');c.width=img.naturalWidth;c.height=img.naturalHeight;const x=c.getContext('2d');x.drawImage(img,0,0);resolve(c.toDataURL('image/jpeg',0.85));}catch(e){reject(e);}};
+    img.onerror=reject;
+    img.src=src;
+  });
 }
 function eur(v){return Number(v||0).toFixed(2).replace('.',',')+' EUR';}
 async function downloadOfferExcel(offer){
