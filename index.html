@@ -883,6 +883,15 @@ function parseSuperLevel(v){
   if(m)return Number(m[1]);
   return isTruthy(v)?1:0;
 }
+function normalizeIlumLabel(v){
+  const raw=String(v||'').trim();
+  const n=normFilt(raw).replace(/[_-]+/g,' ').replace(/\s+/g,' ');
+  if(!n)return 'Directa';
+  if(n.includes('sin ilumin'))return 'Sin Iluminación';
+  if(n.includes('luz ambiente')||n==='ambiente'||n.includes('ambiental'))return 'Ambiente';
+  if(n.includes('direct'))return 'Directa';
+  return raw;
+}
 function normalizeProduct(row){
   return {
     c:String(val(row,['codigo','código','referencia','ref','articulo','artículo'],'')).trim(),
@@ -895,7 +904,7 @@ function normalizeProduct(row){
     med:String(val(row,['medida','medidas','dimension','dimensión','med'],'')).trim(),
     sc:num(val(row,['sensores','sensor','sc'],0),0),
     cct:String(val(row,['cct','temperatura','temperatura color'],'')).trim(),
-    ilum:String(val(row,['iluminacion','iluminación','tipo iluminacion','tipo iluminación'],'Directa')).trim(),
+    ilum:normalizeIlumLabel(val(row,['iluminacion','iluminación','tipo iluminacion','tipo iluminación','tipo_iluminacion','tipo_de_iluminacion','tipoiluminacion'],'Directa')),
     w:String(val(row,['w','watios','potencia'],'')).trim(),
     voltage:String(val(row,['voltage','voltaje','tension','tensión'],'')).trim(),
     uxc:num(val(row,['uxc','uds caja','unidades caja','unidades por caja','uds/caja'],1),1),
@@ -1189,9 +1198,9 @@ function cctMatches(value,selected){
   });
 }
 function ilumMatches(value,selected){
-  const v=normFilt(value).replace(/\s+/g,' ');
+  const v=normFilt(normalizeIlumLabel(value)).replace(/\s+/g,' ');
   return [...selected].some(s=>{
-    const target=normFilt(s).replace(/\s+/g,' ');
+    const target=normFilt(normalizeIlumLabel(s)).replace(/\s+/g,' ');
     return v===target||v.includes(target)||target.includes(v);
   });
 }
