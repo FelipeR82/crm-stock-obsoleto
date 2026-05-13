@@ -895,7 +895,7 @@ function normalizeIlumLabel(v){
 function normalizeProduct(row){
   return {
     c:String(val(row,['codigo','código','referencia','ref','articulo','artículo'],'')).trim(),
-    cat:String(val(row,['categoria','categoría','cat'],'ESPEJOS')).trim().toUpperCase(),
+    cat:String(val(row,['categoria','categoría','categoria_producto','categoría_producto','categoria producto','categoría producto','cat'],'ESPEJOS')).trim().toUpperCase(),
     col:String(val(row,['coleccion','colección','familia','col'],'')).trim(),
     super:isTruthy(val(row,['superofertas','super oferta','superoferta','oferta especial'],'')),
     superLevel:parseSuperLevel(val(row,['superofertas','super oferta','superoferta','oferta especial'],'')),
